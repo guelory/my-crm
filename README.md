@@ -2,6 +2,8 @@
 
 A full-stack CRM application with contact management, deal pipeline tracking, activity logging, and analytics. Deploys to Vercel as a single project — frontend, API, and database.
 
+<!-- Deploy: 2026-05-09 -->
+
 ## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Tailwind CSS + Vite
