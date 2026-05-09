@@ -96,3 +96,44 @@ After seeding, log in with:
 ## Environment Variables
 
 See `backend/.env.example` and `frontend/.env.example`.
+
+## Deploy to Production (Vercel + Railway)
+
+### 1. Deploy backend + database to Railway
+
+1. Go to https://railway.com and sign in with GitHub.
+2. Click **New Project → Deploy from GitHub repo** and select `my-crm`.
+3. When prompted, set the **Root Directory** to `backend`.
+4. Railway will detect Node.js via `nixpacks.toml` and start building.
+5. While it builds, click **+ Create → Database → Add PostgreSQL**.
+6. Open the backend service → **Variables** tab and add:
+   - `DATABASE_URL` = reference variable, click `Add Reference` → `Postgres.DATABASE_URL`
+   - `JWT_SECRET` = any long random string
+   - `JWT_REFRESH_SECRET` = another long random string
+   - `JWT_EXPIRES_IN` = `15m`
+   - `JWT_REFRESH_EXPIRES_IN` = `7d`
+   - `FRONTEND_URL` = (leave blank for now, fill in after Vercel deploy)
+   - `NODE_ENV` = `production`
+7. Under **Settings → Networking**, click **Generate Domain** to expose the API publicly. Copy the URL (e.g., `https://my-crm-backend.up.railway.app`).
+8. Once deployed, open the service shell (**Settings → ... → Open Shell**) and run:
+   ```bash
+   npm run seed
+   ```
+   This populates the demo data and admin user.
+
+### 2. Deploy frontend to Vercel
+
+1. Go to https://vercel.com and sign in with GitHub.
+2. Click **Add New → Project** and import `my-crm`.
+3. Set **Root Directory** to `frontend` (Vercel auto-detects Vite).
+4. Under **Environment Variables** add:
+   - `VITE_API_URL` = your Railway URL from step 1.7 (e.g., `https://my-crm-backend.up.railway.app`)
+5. Click **Deploy**.
+6. Once deployed, copy the Vercel URL (e.g., `https://my-crm.vercel.app`).
+
+### 3. Connect them
+
+Go back to Railway → backend service → **Variables** and set:
+- `FRONTEND_URL` = your Vercel URL from step 2.6
+
+The backend will redeploy automatically. Visit your Vercel URL and log in with `admin@mycrm.com` / `password123`.
