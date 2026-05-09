@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  passwordHash   String
+  name           String
+  role           UserRole     @default(SALES_REP)
+  avatarUrl      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  refreshTokens  RefreshToken[]
+  contacts       Contact[]    @relation("ContactOwner")
+  deals          Deal[]       @relation("DealOwner")
+  activities     Activity[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Contact {
+  id          String       @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String?      @unique
+  phone       String?
+  company     String?
+  jobTitle    String?
+  status      ContactStatus @default(LEAD)
+  tags        String[]
+  notes       String?
+  avatarUrl   String?
+  linkedinUrl String?
+  website     String?
+  address     String?
+  ownerId     String
+  owner       User         @relation("ContactOwner", fields: [ownerId], references: [id])
+  deals       Deal[]
+  activities  Activity[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model Deal {
+  id          String     @id @default(cuid())
+  title       String
+  value       Float      @default(0)
+  stage       DealStage  @default(LEAD)
+  probability Int        @default(10)
+  closeDate   DateTime?
+  notes       String?
+  contactId   String?
+  contact     Contact?   @relation(fields: [contactId], references: [id])
+  ownerId     String
+  owner       User       @relation("DealOwner", fields: [ownerId], references: [id])
+  activities  Activity[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([ownerId])
+  @@index([stage])
+  @@index([contactId])
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  subject     String
+  body        String?
+  outcome     String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  contactId   String?
+  contact     Contact?     @relation(fields: [contactId], references: [id])
+  dealId      String?
+  deal        Deal?        @relation(fields: [dealId], references: [id])
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([type])
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  SALES_REP
+}
+
+enum ContactStatus {
+  LEAD
+  PROSPECT
+  CUSTOMER
+  CHURNED
+}
+
+enum DealStage {
+  LEAD
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum ActivityType {
+  EMAIL
+  CALL
+  MEETING
+  NOTE
+  TASK
+}
