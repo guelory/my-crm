@@ -8,7 +8,7 @@
     "dev:web": "vite",
     "dev:api": "tsx watch server/index.ts",
     "build": "prisma generate && vite build",
-    "vercel-build": "prisma generate && prisma migrate deploy && vite build",
+    "vercel-build": "prisma generate && prisma migrate deploy && tsx prisma/seed.ts && vite build",
     "start": "tsx server/index.ts",
     "seed": "prisma db seed",
     "lint": "eslint . --ext ts,tsx",
